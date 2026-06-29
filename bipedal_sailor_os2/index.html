@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bipedal Sailor OS 2 — Kinetic Layer Comparison</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <style>
+        :root {
+            --bg: #090b11;
+            --panel: rgba(15, 23, 42, 0.95);
+            --border: rgba(255,255,255,0.08);
+            --accent: #38bdf8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --text: #f8fafc;
+            --dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            height: 100vh; display: flex; overflow: hidden;
+        }
+
+        #left-panel {
+            width: 300px; background: var(--panel);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem; display: flex; flex-direction: column; gap: 1.2rem;
+            overflow-y: auto; z-index: 10;
+        }
+
+        #canvas-wrap {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #090b11 100%);
+            position: relative;
+        }
+        
+        canvas#sim-canvas { max-width: 100%; max-height: 100vh; }
+
+        h1 { font-size: 1.4rem; font-weight: 700; color: var(--accent); letter-spacing: -0.02em; }
+        .sub { font-size: 0.75rem; color: var(--dim); margin-top: 2px; }
+
+        .section-label {
+            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em;
+            color: var(--dim); border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem; margin-bottom: 0.5rem;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 8px; padding: 0.8rem;
+            display: flex; flex-direction: column; gap: 0.3rem;
+        }
+        .stat-card .label { font-size: 0.65rem; color: var(--dim); text-transform: uppercase; }
+        .stat-card .value { font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 700; }
+        
+        .value.danger { color: var(--danger); }
+        .value.success { color: var(--success); }
+
+        button {
+            padding: 0.7rem; border-radius: 8px; border: 1px solid var(--accent);
+            background: rgba(56, 189, 248, 0.1); color: var(--accent);
+            font-family: 'Outfit', sans-serif; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.1em;
+        }
+        .danger-btn {
+            background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: var(--danger);
+        }
+        .danger-btn:hover { background: var(--danger); color: #fff; }
+
+        .indicator-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+        .indicator-label { font-size: 0.7rem; color: var(--dim); }
+        .indicator-val { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; }
+        .bar-wrap { height: 6px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+        .bar-fill { height: 100%; transition: width 0.1s; }
+        .bar-fill.attract { background: var(--success); }
+        .bar-fill.repel { background: var(--danger); }
+        .bar-fill.inertia { background: var(--accent); }
+
+        .toggle-wrap {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: rgba(255,255,255,0.03); padding: 0.8rem; border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .toggle-wrap input { cursor: pointer; }
+        .toggle-wrap label { font-size: 0.8rem; cursor: pointer; }
+
+    </style>
+</head>
+<body>
+
+    <aside id="left-panel">
+        <header>
+            <h1>Bipedal Sailor OS 2</h1>
+            <p class="sub">Demo perbandingan pentingnya Kinetic Layer (Embodiment) dalam menjaga keseimbangan.</p>
+        </header>
+
+        <button id="reset-btn">Reset Robot</button>
+        <button id="shove-btn" class="danger-btn">Giant Wave (Shove)</button>
+
+        <div class="toggle-wrap">
+            <input type="checkbox" id="kinetic-toggle" checked>
+            <label for="kinetic-toggle">Aktifkan Kinetic Layer (Embodiment)</label>
+        </div>
+
+        <div>
+            <p class="section-label">Physics State</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <div class="stat-card">
+                    <div class="label">Ship Tilt</div>
+                    <div class="value" id="ship-tilt">0.0°</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Robot Tilt</div>
+                    <div class="value" id="robot-tilt">0.0°</div>
+                </div>
+            </div>
+            <div class="stat-card" style="margin-top: 0.5rem;">
+                <div class="label">Balance Status</div>
+                <div class="value success" id="status-val">STABLE</div>
+            </div>
+        </div>
+
+        <div>
+            <p class="section-label">Tension & Inertia</p>
+            <div style="margin-bottom: 0.8rem;">
+                <div class="indicator-row">
+                    <span class="indicator-label">Dynamic CoG (Repulsor)</span>
+                    <span class="indicator-val" id="grav-val">0.0</span>
+                </div>
+                <div class="bar-wrap"><div class="bar-fill inertia" id="grav-bar" style="width: 0%;"></div></div>
+            </div>
+            <div style="margin-bottom: 0.8rem;">
+                <div class="indicator-row">
+                    <span class="indicator-label">Left Muscle (Target Length)</span>
+                    <span class="indicator-val" id="attr-val">0.0</span>
+                </div>
+                <div class="bar-wrap"><div class="bar-fill attract" id="attr-bar" style="width: 0%;"></div></div>
+            </div>
+            <div style="margin-bottom: 0.8rem;">
+                <div class="indicator-row">
+                    <span class="indicator-label">Right Muscle (Target Length)</span>
+                    <span class="indicator-val" id="repel-val">0.0</span>
+                </div>
+                <div class="bar-wrap"><div class="bar-fill repel" id="repel-bar" style="width: 0%;"></div></div>
+            </div>
+            <div style="margin-bottom: 0.8rem;">
+                <div class="indicator-row">
+                    <span class="indicator-label">Inertia / Muscle Speed</span>
+                    <span class="indicator-val" id="motor-val">0.0</span>
+                </div>
+                <div class="bar-wrap"><div class="bar-fill" style="background:#fbbf24;" id="motor-bar" style="width: 0%;"></div></div>
+            </div>
+        </div>
+
+        <div>
+            <p class="section-label">Description</p>
+            <p style="font-size:0.7rem; color:var(--dim); line-height:1.5;">
+                Jika <b>Kinetic Layer</b> dimatikan, keputusan dari Layer 3 (Decision) langsung diterapkan ke panjang kaki tanpa memperhitungkan inersia dan batasan kecepatan motorik. Hal ini menyebabkan robot menjadi terlalu kaku/sentakan tinggi dan mudah jatuh saat ombak besar.
+            </p>
+        </div>
+    </aside>
+
+    <main id="canvas-wrap">
+        <canvas id="sim-canvas"></canvas>
+    </main>
+
+    <script type="module" src="simulation.js"></script>
+</body>
+</html>

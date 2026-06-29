@@ -1,0 +1,16 @@
+{
+  "name": "agentix-os-kernel",
+  "version": "2.0.0",
+  "description": "Agentix OS Kernel — Relational Topology Dynamics Framework (RTDF) v2.0 — Node.js Edition",
+  "main": "index.js",
+  "scripts": {
+    "demo": "node demo_swarm.js",
+    "test": "node demo_swarm.js"
+  },
+  "keywords": ["agentix", "swarm", "multi-agent", "rtdf", "edge", "iot"],
+  "author": "Agentix Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

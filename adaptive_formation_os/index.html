@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Formation OS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --panel: rgba(20, 20, 30, 0.8);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.5);
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+        }
+
+        #simulation-container {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0f 100%);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui-panel {
+            width: 320px;
+            background: var(--panel);
+            backdrop-filter: blur(12px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        .stat-value {
+            font-family: 'JetBrains+Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        button {
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+            border-color: var(--accent);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.primary {
+            background: var(--accent);
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        button.primary:hover {
+            background: #4f46e5;
+        }
+
+        button.danger {
+            color: var(--danger);
+        }
+
+        button.danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger);
+        }
+
+        .formation-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .formation-btn {
+            font-size: 0.85rem;
+            padding: 0.5rem;
+        }
+
+        .formation-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        #graph-view {
+            margin-top: auto;
+            font-family: 'JetBrains+Mono', monospace;
+            font-size: 0.7rem;
+            background: black;
+            padding: 1rem;
+            border-radius: 8px;
+            color: #4ade80;
+            height: 120px;
+            overflow-y: auto;
+            border: 1px solid #22c55e33;
+        }
+
+        .badge {
+            background: var(--accent);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            margin-left: auto;
+        }
+        
+        /* Slider styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+    </style>
+</head>
+<body>
+    <div id="simulation-container">
+        <canvas id="sim-canvas"></canvas>
+    </div>
+
+    <aside id="ui-panel">
+        <header>
+            <h1>FORMATION OS</h1>
+            <p style="font-size: 0.8rem; color: var(--text-dim);">Relational Adaptive Kernel</p>
+        </header>
+
+        <div class="section">
+            <p class="section-title">Formations</p>
+            <div class="formation-selector">
+                <button class="formation-btn active" data-type="triangle">Triangle</button>
+                <button class="formation-btn" data-type="circle">Circle</button>
+                <button class="formation-btn" data-type="cube">Cube</button>
+                <button class="formation-btn" data-type="cross">Cross</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <p class="section-title">Transition Speed</p>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="range" id="speed-slider" min="0.01" max="0.5" step="0.01" value="0.05" style="flex: 1;">
+                <span id="speed-val" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">0.05</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <p class="section-title">Simulation Control</p>
+            <div class="button-group">
+                <button id="add-agent" class="success">+ Add Agent</button>
+                <button id="remove-agent" class="danger">- Remove Random</button>
+                <button id="reset-sim">Reset Simulation</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <p class="stat-label">Agents</p>
+                <p id="agent-count" class="stat-value">0</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Stability</p>
+                <p id="stability-val" class="stat-value">98%</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <p class="section-title">Graph Relational Status</p>
+            <div id="graph-view">
+                > Initializing kernel...
+                > Loading map.yaml...
+                > Relational mapping active.
+            </div>
+        </div>
+    </aside>
+
+    <script type="module" src="simulation.js"></script>
+</body>
+</html>

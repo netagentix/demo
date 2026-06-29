@@ -1,0 +1,52 @@
+field:
+  width: 800
+  height: 600
+  bg_color: "#0a0a0f"
+  grid_color: "rgba(255, 255, 255, 0.05)"
+
+# Relational Graph Topology Definitions
+formations:
+  triangle:
+    id: 0
+    name: "Triangle"
+    spacing: 75
+    center_offset: [0, -60]
+    topology: "layered_pyramid"
+    graph_logic: "index_to_row_col_mapping"
+  circle:
+    id: 1
+    name: "Circle"
+    radius_step: 15
+    min_radius: 60
+    topology: "radial_shell"
+    graph_logic: "polar_distribution"
+  cube:
+    id: 2
+    name: "Cube"
+    grid_size: 70
+    topology: "orthogonal_grid"
+    graph_logic: "sqrt_bounding_box"
+  cross:
+    id: 3
+    name: "Cross"
+    arm_spacing: 65
+    topology: "central_axial"
+    graph_logic: "quadrant_distribution"
+
+physics:
+  stiffness: 0.15 # Strength of attraction to target slot
+  damping: 0.85 # Velocity retention
+  repulsion_strength: 1200 # Force to prevent overlaps
+  repulsion_radius: 60 # Range of repulsion
+  noise_amplitude: 0.8 # Dynamic jitter
+
+initial_agents: 10
+max_agents: 40
+min_agents: 2
+
+# Meta-Rules for the Relational Kernel
+rules:
+  - "Each agent seeks its slot defined by the active formation kernel."
+  - "Slots are calculated relative to the formation center of mass."
+  - "Repulsion is a local field effect (1/d^2) applied to all neighbors."
+  - "Formation switching preserves momentum but updates target vectors instantly."

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swarm Corridor Cross OS — Relational Crowd Kernel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_demo_mini.css">
+</head>
+<body>
+    <main id="main-view">
+        <div class="stats-bar">
+            <div class="stat-card"><p class="stat-label">Population</p><p id="visitor-val" class="stat-val">0</p></div>
+            <div class="stat-card"><p class="stat-label">Flow Efficiency</p><p id="flow-efficiency-val" class="stat-val">0.0%</p></div>
+            <div class="stat-card"><p class="stat-label">Gridlock Proximity</p><p id="collision-val" class="stat-val">0</p></div>
+            <div class="stat-card"><p class="stat-label">FPS</p><p id="fps-val" class="stat-val">60</p></div>
+            <div class="stat-card"><p class="stat-label">Jitter</p><p id="jitter-val" class="stat-val">0.0 ms</p></div>
+        </div>
+        <div id="canvas-wrap"><canvas id="sim-canvas"></canvas></div>
+        <div class="playback-controls"><button id="start-btn" class="primary">Start Simulation</button><button id="step-btn">Step</button><button id="reset-btn">Reset</button></div>
+        <div class="team-legend"><div class="legend-item"><div class="dot blue"></div><span>Team A (Navigating Rightward)</span></div><div class="legend-item"><div class="dot red"></div><span>Team B (Navigating Leftward)</span></div></div>
+    </main>
+    <script type="module" src="simulation.js"></script>
+</body>
+</html>

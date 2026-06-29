@@ -1,0 +1,58 @@
+simulation:
+  bond_length: 25.0
+  steric_radius: 14.0
+  interaction_radius: 120.0
+  friction: 0.60
+  heat: 0.2
+
+logic:
+  pairwise_force:
+    magnitude:
+      - 0.0
+      - 2.0
+      -
+        - [bond_stretch, 8.0]
+        - [steric_overlap, -20.0]
+        - [hydrophobic_pull, 4.0]
+        - [ionic_pull, 6.0]
+      - tanh
+
+types:
+  HYDROPHOBIC:
+    color: "#fbbf24"
+    polar: false
+    charge: 0
+  POLAR:
+    color: "#38bdf8"
+    polar: true
+    charge: 0
+  POSITIVE:
+    color: "#ef4444"
+    polar: true
+    charge: 1
+  NEGATIVE:
+    color: "#22c55e"
+    polar: true
+    charge: -1
+
+sequence:
+  - POLAR
+  - HYDROPHOBIC
+  - HYDROPHOBIC
+  - POLAR
+  - POSITIVE
+  - HYDROPHOBIC
+  - HYDROPHOBIC
+  - HYDROPHOBIC
+  - NEGATIVE
+  - POLAR
+  - HYDROPHOBIC
+  - POLAR
+  - POSITIVE
+  - HYDROPHOBIC
+  - HYDROPHOBIC
+  - NEGATIVE
+  - POLAR
+  - HYDROPHOBIC
+  - HYDROPHOBIC
+  - POLAR

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird RL — Agentix OS Kernel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <style>
+        :root {
+            --bg: #080c14;
+            --panel: rgba(13,18,32,0.92);
+            --border: rgba(255,255,255,0.07);
+            --accent: #6366f1;
+            --accent2: #22c55e;
+            --gold: #fbbf24;
+            --text: #e2e8f0;
+            --dim: #64748b;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ── Left Panel ── */
+        #left-panel {
+            width: 280px;
+            flex-shrink: 0;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 1.2rem;
+            gap: 1.25rem;
+            overflow-y: auto;
+            backdrop-filter: blur(16px);
+        }
+
+        /* ── Canvas Area ── */
+        #canvas-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 40%, #0d1b3e 0%, #080c14 70%);
+            position: relative;
+        }
+
+        canvas#sim-canvas {
+            max-height: 100vh;
+            max-width: 100%;
+            object-fit: contain;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+        }
+
+        /* ── Right Panel ── */
+        #right-panel {
+            width: 260px;
+            flex-shrink: 0;
+            background: var(--panel);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 1.2rem;
+            gap: 1.25rem;
+            overflow-y: auto;
+            backdrop-filter: blur(16px);
+        }
+
+        /* ── Typography ── */
+        h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .sub { font-size: 0.72rem; color: var(--dim); margin-top: 2px; }
+
+        .section-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--dim);
+            margin-bottom: 0.4rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+
+        /* ── Stat Grid ── */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.7rem 0.8rem;
+        }
+
+        .stat-card .label {
+            font-size: 0.62rem;
+            color: var(--dim);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .stat-card .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1.2;
+        }
+
+        .stat-card .value.gold { color: var(--gold); }
+        .stat-card .value.green { color: var(--accent2); }
+
+        /* ── Big Counters ── */
+        .counter-pair {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .counter {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(99,102,241,0.04) 100%);
+            border: 1px solid rgba(99,102,241,0.25);
+            border-radius: var(--radius);
+            padding: 0.9rem;
+            text-align: center;
+        }
+
+        .counter.gen { border-color: rgba(251,191,36,0.3); background: linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(251,191,36,0.03) 100%); }
+
+        .counter .clabel { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); }
+        .counter .cval {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .counter.gen .cval { color: var(--gold); }
+        .counter:not(.gen) .cval { color: var(--accent); }
+
+        /* ── Controls ── */
+        .btn-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.65rem 0.8rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.04);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        button:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
+        button.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 4px 18px rgba(99,102,241,0.35);
+        }
+
+        button.primary:hover { background: #4f46e5; }
+
+        /* ── Graph Param Bars ── */
+        .param-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+        }
+
+        .param-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .param-head {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.68rem;
+        }
+
+        .param-name { color: var(--dim); }
+        .param-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text);
+        }
+
+        .bar-track {
+            height: 4px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            background: linear-gradient(90deg, var(--accent), #818cf8);
+            transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        /* ── Graph Evolution Chart ── */
+        canvas#graph-chart {
+            width: 100%;
+            height: 120px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+        }
+
+        .legend {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 0.3rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.6rem;
+            color: var(--dim);
+        }
+
+        .legend-dot {
+            width: 8px; height: 3px;
+            border-radius: 2px;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT PANEL: Controls + Live Stats -->
+    <aside id="left-panel">
+        <header>
+            <h1>FLAPPY AGENTIX</h1>
+            <p class="sub">Agentix OS · Evolution Kernel</p>
+        </header>
+
+        <div>
+            <p class="section-label">Simulation</p>
+            <div class="btn-row">
+                <button class="primary" id="start-btn">Start</button>
+                <button id="reset-btn">Reset</button>
+            </div>
+        </div>
+
+        <div>
+            <p class="section-label">Live Counters</p>
+            <div class="counter-pair">
+                <div class="counter gen">
+                    <div class="clabel">Generation</div>
+                    <div class="cval" id="gen-val">0</div>
+                </div>
+                <div class="counter">
+                    <div class="clabel">Frame</div>
+                    <div class="cval" id="frame-val">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <p class="section-label">Agents</p>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="label">Alive</div>
+                    <div class="value green" id="alive-val">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Gen Fitness</div>
+                    <div class="value" id="gen-fit">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">All-Time Fit</div>
+                    <div class="value gold" id="best-fit">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Score</div>
+                    <div class="value" id="score-val">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <p class="section-label">Pipes Passed</p>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="label">This Gen</div>
+                    <div class="value green" id="cur-pipes-val">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Gen Record</div>
+                    <div class="value" id="gen-pipes-val">0</div>
+                </div>
+            </div>
+            <div style="margin-top:0.6rem">
+                <div class="stat-card" style="border-color:rgba(251,191,36,0.3); background:linear-gradient(135deg,rgba(251,191,36,0.08) 0%,rgba(251,191,36,0.02) 100%)">
+                    <div class="label">All-Time Record</div>
+                    <div class="value gold" id="max-pipes-val">0</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- CENTER: Simulation Canvas -->
+    <main id="canvas-wrap">
+        <canvas id="sim-canvas"></canvas>
+    </main>
+
+    <!-- RIGHT PANEL: Graph Evolution -->
+    <aside id="right-panel">
+        <div>
+            <p class="section-label">Agentix Evolution Core</p>
+            <p style="font-size:0.68rem; color:var(--dim); line-height:1.6; margin-bottom: 1rem;">
+                Using <code>05_evolution_calibration.js</code>. Population of 30 agents.
+                Elites breed each generation.
+            </p>
+        </div>
+
+        <div>
+            <p class="section-label">Real-time Tension (Best Agent)</p>
+            <canvas id="graph-chart" width="220" height="200"></canvas>
+        </div>
+
+    </aside>
+
+    <script type="module" src="simulation.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+runtime_params:
+  field_dim: [120.0, 30.0]
+  friction: 0.88
+  neighbor_dist: 10.0
+
+agents_init:
+  A: 50
+  B: 50
+
+global: 
+  visitor: 1000000
+  K:5000
+
+roles_logic:
+  walker:
+    attractor_weight: 0.15
+    lane_bias: 0.04
+    attractor_x: 5
+    alignment: 0.
+    left_bias: 0.8
+
+    repulsion:
+      same_team: 0.4
+      opposite_team: 2.2
+      wall: 1.5
+
+    pressure:
+      crowd_density: 0.9

@@ -1,0 +1,45 @@
+/* UI styling for swarm_corridor_cross_mini */
+:root {
+    --bg: #030712;
+    --panel: rgba(17, 24, 39, 0.95);
+    --border: rgba(255, 255, 255, 0.06);
+    --accent: #6366f1;
+    --accent-glow: rgba(99, 102, 241, 0.4);
+    --text: #f3f4f6;
+    --dim: #9ca3af;
+    --blue-team: #3b82f6;
+    --red-team: #ef4444;
+}
+* {margin: 0; padding: 0; box-sizing: border-box;}
+body {background-color: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; height: 100vh; display: flex; overflow: hidden;}
+#left-panel {width: 360px; background: var(--panel); border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; gap: 1.2rem; overflow-y: auto; z-index: 10;}
+#main-view {flex: 1; display: flex; flex-direction: column; background: #090d16; position: relative; padding: 1.5rem; gap: 1.2rem;}
+#canvas-wrap {flex: 1; background: #07090e; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: inset 0 4px 30px rgba(0, 0, 0, 0.8); position: relative;}
+canvas#sim-canvas {display: block; width: 100%; height: 100%;}
+h1 {font-size: 1.4rem; font-weight: 700; background: linear-gradient(135deg, #fff 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.02em;}
+.sub {font-size: 0.75rem; color: var(--dim); margin-top: 3px;}
+.section-label {font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--dim); border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; margin-bottom: 0.5rem; margin-top: 0.8rem;}
+.control-group {display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.6rem;}
+.control-row {display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;}
+.control-row label {font-weight: 500;}
+.control-value {font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent); font-size: 0.75rem;}
+input[type=range] {width: 100%; background: rgba(255, 255, 255, 0.05); border-radius: 2px; height: 4px; outline: none; -webkit-appearance: none;}
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 8px var(--accent-glow); transition: transform 0.1s;}
+input[type=range]::-webkit-slider-thumb:hover {transform: scale(1.2);}
+.stats-bar {display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem;}
+.stat-card {background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; text-align: center;}
+.stat-label {font-size: 0.7rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem;}
+.stat-val {font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 700; color: #ffffff;}
+.playback-controls {display: flex; gap: 1rem; justify-content: center; align-items: center;}
+button {padding: 0.75rem 1.5rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.04); color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 0.5rem;}
+button:hover {background: rgba(255, 255, 255, 0.1); border-color: var(--accent); transform: translateY(-1px);}
+button:active {transform: translateY(0);}
+button.primary {background: var(--accent); border-color: var(--accent); box-shadow: 0 4px 15px var(--accent-glow);}
+button.primary:hover {background: #4f46e5;}
+button.primary.active {background: #10b981; border-color: #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);}
+#graph-view {font-family: 'JetBrains+Mono', 'JetBrains Mono', monospace; font-size: 0.7rem; background: #02040a; padding: 0.8rem; border-radius: 8px; color: #34d399; height: 110px; overflow-y: auto; border: 1px solid rgba(52, 211, 153, 0.15); display: flex; flex-direction: column; gap: 4px;}
+.team-legend {display: flex; gap: 1rem; font-size: 0.75rem; color: var(--dim); justify-content: center;}
+.legend-item {display: flex; align-items: center; gap: 0.4rem;}
+.dot {width: 8px; height: 8px; border-radius: 50%;}
+.dot.blue {background-color: var(--blue-team); box-shadow: 0 0 6px var(--blue-team);}
+.dot.red {background-color: var(--red-team); box-shadow: 0 0 6px var(--red-team);}
